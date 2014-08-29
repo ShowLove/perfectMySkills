@@ -116,7 +116,23 @@ for(j = 0; j < 5; j++)
 		printf("&b[%lu] = %p \n", j, &b[j] );
 
 printf("notice the addresses jump 8 instead of 4 now\n");
-	
+
+uint64 *pTmp;
+
+	pTmp = &b[0];
+
+	printf("\n");
+	printf("uint64 pointer addition (p++) should produce the same result as increasing the array\n");
+	printf("Contents of uint64 p++ should also produce the correct data\n ");
+
+	for( i = 0; i < 5; i++)
+	{
+		printf("OutPut: ");
+		printf("&b[%d] = %p  ", i, pTmp);
+		printf("p[%lu] = %lu\n", b[i], *pTmp);
+			pTmp++;
+	}	
+
 }
 
 /*******************************************************************

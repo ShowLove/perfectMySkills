@@ -32,6 +32,7 @@ int main( void )
 /////////////////////////////////////////////////////////////////////////////////////
 //	int keepLooping = 1, question = 11;
 //for some reason when i put questions in case and while loop everything goes to shit
+//Not worth my effort to fix it right now
 //	while( keepLooping )
 //	{
 /*
