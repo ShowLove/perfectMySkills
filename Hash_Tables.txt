@@ -1,0 +1,429 @@
+HASH TABLES
+
+(Notes from Thursday, July 18, and Tuesday, July 23, 2013)
+
+================================================================================
+
+First, let's consider some of the data structures we've seen already this
+semester, and what the worst- and average-case runtimes are for insertion,
+search, and deletion in those data structures:
+
+Array (unsorted)
+            WORST    AVG
+Insertion   O(1)     O(1)
+Search      O(N)     N/2 => O(N)
+Deletion    O(N)     O(N)
+
+Array (sorted)
+            WORST    AVG
+Insertion   O(N)     O(N)
+Search      O(log n) O(log n)
+Deletion    O(N)     O(N)
+
+Binary search tree (unbalanced)
+            WORST    AVG
+Insertion   O(N)     O(log n)
+Search      O(N)     O(log n)
+Deletion    O(N)     O(log n)
+
+Binary search tree (balanced) (AVL TREE)
+            WORST    AVG
+Insertion   O(log n) O(log n)
+Search      O(log n) O(log n)
+Deletion    O(log n) O(log n)
+
+================================================================================
+
+Suppose I have some student structs, and I want to put them into an array, and I
+want to use the student ID as the index. IDs range from 1 through 9,999,999.
+
+Direct indexing of a huge array
+            WORST    AVG
+Insertion   O(1)     O(1)
+Search      O(1)     O(1)
+Deletion    O(1)     O(1)
+
+Two restrictions on this approach:
+
+1. We have to know a priori what the range of the indexing value is.
+
+2. The array is HUGE.
+
+   a. We might not even have enough space if the range is large enough.
+
+   b. More importantly (and more realistically), we might have a LOT of wasted
+      (unused) space.
+
+================================================================================
+
+So, with hash tables, we want to support all of these operations efficiently
+(i.e., we're looking for O(1) runtimes, without the memory bloat).
+
+Suppose, first of all, that we create an array (a HASH TABLE) to hold N student
+records, where N is of course exactly the number of student records we have to
+hold.
+
+Suppose also that we have a magical function -- a HASH function -- that assigns
+a unique value to each student record (based on the ID) that ranges from 0
+through N-1.
+
+Hash Tables will then support:
+            WORST
+Insertion   O(1)
+Search      O(1)
+Deletion    O(1)
+
+That sounds pretty fantastic!
+
+================================================================================
+
+In the real world, however, hash functions aren't perfect. They'll map SOME keys
+to the same value (or INDEX). This is called a COLLISION.
+
+For example, suppose our hash function for our student IDs is h(ID) = ID % 20,
+and we have 20 students to put into our hash table. Most likely, we'll have some
+IDs, say ID_1 and ID_2, such that hash(ID_1) = hash(ID_2). But we can't put them
+both into the same position in our array (our HASH TABLE).
+
+We need some COLLISION RESOLUTION mechanism / algorithms / policies.
+
+================================================================================
+
+I. LINEAR PROBING
+
+With linear probing, a collision causes us to search linearly for the next
+available space in the hash table. If necessary, we wrap back around to the
+beginning of the array. (To do that, just mod by the length of the array, often
+called TABLE_SIZE.)
+
+For example, suppose we want to insert the following elements (KEYS) into a
+hash table, and we have some hash function that produces the hash values shown
+below. (Suppose also that our hash table is of length 10.)
+
+
+  hash(16) = 7  =>  insert into position 7
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    |    |    |    |    |    | 16 |    |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+  hash(15) = 3  =>  insert into position 3
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    |    | 15 |    |    |    | 16 |    |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+  hash(22) = 2  =>  insert into position 2
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    | 22 | 15 |    |    |    | 16 |    |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+  hash(17) = 4  =>  insert into position 4
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    | 22 | 15 | 17 |    |    | 16 |    |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+
+  hash(23) = 7  =>  uh oh, spaghetti-o! This is a COLLISION! There's already an
+                    element at position 7. So, we move forward to the next spot,
+                    find that it's empty, and insert 23 there instead.
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    | 22 | 15 | 17 |    |    | 16 | 23 |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+Now, consider the implications for search (retrieval) in the hash table. What if
+we want to look up 55, and we know that hash(55) = 2? We have to perform linear
+probing to search for that element. We'll end up looking at indices 2, 3, 4,
+and 5 before we stop searching. Thus, insertion and retrieval with linear
+probing are O(N) operations:
+
+Hash tables with linear probing:
+            WORST
+Insertion   O(N)    (lots of collisions!)
+Search      O(N)
+
+With linear probing, there are three conditions that could cause us to stop
+searching for a key:
+
+1. We find the key we're looking for.
+2. We find an empty space in the table.
+3. We loop all the way around to the start index without finding the key or any
+   empty table positions.
+
+The main problem with linear probing is the clustering effect. Once clusters of
+data start to form in the hash table, the chances of a lengthy insertion or
+retrieval operation really start to ramp up!
+
+================================================================================
+
+II. QUADRATIC PROBING
+
+Quadratic probing is another collision resolution policy that searches for open
+positions, but instead of doing so linearly, it skips forward by an increasing
+number of spaces. Namely, it adds an i^2 term.
+
+Consider an example where we already have the following elements in a hash table:
+
+  +----+----+----+----+----+----+----+----+----+----+
+  |    |    | 22 | 15 | 17 |    | 12 | 16 | 23 |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+Now suppose we want to add 43, and hash(43) = 2. Quadratic probing will examine
+indices in the following order:
+
+   Attempt to insert at index (2 + 0^2) % TABLE_SIZE = 2 % 10 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 1^2) % TABLE_SIZE = 3 % 10 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 2^2) % TABLE_SIZE = 6 % 10 = 6
+    -> Fail. Index 6 is in use.
+
+   Attempt to insert at index (2 + 3^2) % TABLE_SIZE = 11 % 10 = 1
+    -> Success! Insert 43 at index 1.
+
+  +----+----+----+----+----+----+----+----+----+----+
+  |    | 43 | 22 | 15 | 17 |    | 12 | 16 | 23 |    |
+  +----+----+----+----+----+----+----+----+----+----+
+    0    1    2    3    4    5    6    7    8    9
+
+Notice that we are adding an i^2 term to our hash value each time.
+
+There is still potential for collisions here, but we expect values in our hash
+table to be more spaced out with quadratic probing. Nonetheless:
+
+Hash tables with quadratic probing:
+            WORST
+Insertion   O(N)    (lots of collisions!)
+Search      O(N)
+
+================================================================================
+
+A problem with quadratic probing: Consider what happens if we try to insert 18
+into the following hash table, and hash(18) = 2.
+
+  +----+----+----+----+
+  |    |    | 42 | 12 |
+  +----+----+----+----+
+    0    1    2    3
+
+   Attempt to insert at index (2 + 0^2) % TABLE_SIZE = 2 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 1^2) % TABLE_SIZE = 3 % 4 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 2^2) % TABLE_SIZE = 6 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 3^2) % TABLE_SIZE = 11 % 4 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 4^2) % TABLE_SIZE = 18 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 5^2) % TABLE_SIZE = 27 % 4 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 6^2) % TABLE_SIZE = 38 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 7^2) % TABLE_SIZE = 51 % 4 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 8^2) % TABLE_SIZE = 66 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   Attempt to insert at index (2 + 9^2) % TABLE_SIZE = 83 % 4 = 3
+    -> Fail. Index 3 is in use.
+
+   Attempt to insert at index (2 + 10^2) % TABLE_SIZE = 102 % 4 = 2
+    -> Fail. Index 2 is in use.
+
+   ...
+
+   Whatevverrrrr! I give up!
+
+Admittedly, this is a contrived example. Why would we ever create such a tiny
+hash table? But it demonstrates (in a concrete way) something that could be a
+huge problem with larger hash tables, too.
+
+To ensure that quadratic probing will actually find an empty space in a hash
+table (if there is one) without looping infinitely, two conditions must be met:
+
+1. The hash table must be AT LEAST half empty.
+
+2. The size of the hash table must be a PRIME NUMBER.
+
+(We'll see a proof of this in COP 3503.)
+
+================================================================================
+
+III. SEPARATE CHAINING
+
+With separate chaining, we set up a linked list at each index in our array. By
+inserting new elements at the beginning of each linked list, we can achieve O(1)
+insertion of new elements. We still have O(N) retrieval in the worst case (where
+all elements hash to the same index), but if we assume we have a decent hash
+function, we would expect these elements to be fairly evenly spaced out in our
+hash table, yielding average-case O(1) retrieval.
+
+NOTE: If we disallow the insertion of duplicate keys into our hash table, we
+      have to perform the worst-case O(N) traversal of the linked list before
+      adding the new element, in order to ensure that it's not already there.
+      But, again, we would expect average-case O(1) runtime for that operation
+      if we're using a reasonable hash function.
+
+So, our original example might look like this:
+
+  hash(16) = 7  =>  insert into position 7
+  hash(15) = 3  =>  insert into position 3
+  hash(22) = 2  =>  insert into position 2
+  hash(17) = 4  =>  insert into position 4
+  hash(23) = 7  =>  insert into position 7
+
+     +----+
+  0  |    |--> NULL
+     +----+
+  1  |    |--> NULL
+     +----+   +----+
+  2  |    |-->| 22 |
+     +----+   +----+
+  3  |    |-->| 15 |
+     +----+   +----+
+  4  |    |-->| 17 |
+     +----+   +----+
+  5  |    |
+     +----+
+  6  |    |
+     +----+   +----+   +----+
+  7  |    |-->| 23 |-->| 16 |
+     +----+   +----+   +----+
+  8  |    |
+     +----+
+  9  |    |
+     +----+
+
+================================================================================
+
+An option for deletion with linear and quadratic probing:
+
+1. Go to the index of the item to be deleted and simply remove it.
+2. Go to the next index. If there's an item there, remove it an re-insert it.
+3. Repeat Step 2 until an empty index is encountered.
+
+Another option for deletion:
+
+Just mark the index with a "deleted" flag (or maintain a separate array to keep
+track of which indices are used and unused). When inserting new elements, we can
+place them in "deleted" indices. When searching, we can stop if we encounter an
+empty spot before finding the element we're searching for, but not if we see a
+spot flagged as "deleted". In that case, we must keep searching.
+
+================================================================================
+
+An observation about hash functions:
+
+Regardless of the collision resolution algorithm we use, if we have a really
+terrible hash function that yields tons of collisions, we will totally kill our
+runtimes. However, each of these mechanisms has the potential to yield O(1)
+average runtimes for insertion and retrieval.
+
+For example, suppose we want to hash hundreds of thousands of strings into a
+hash table. We create a hash table that has hundreds of thousands of indices,
+and use the following hash function:
+
+   hash(string) = (int)(tolower( string[0] ) - 'a')
+
+In this case, every string is hashed to an index 0 through 25. We'll have
+hundreds of thousands of collisions, and the average runtimes for our insertion
+and search functions will suffer accordingly.
+
+Another really terrible hash function would be to simply sum the ASCII values of
+a string, because the range of that function is also severely limited when
+dealing with English word strings, as they tend not to be very long (although
+the range is not quite as small as the range [0, 25] that we saw with the
+previous example of a bad hash function).
+
+================================================================================
+
+To re-cap, here are our runtimes:
+
+                   INSERTION          SEARCH/RETRIEVAL
+======================================================
+                   WORST    AVG       WORST    AVG
+======================================================
+Linear Probing     O(n)     O(1)      O(n)     O(1)
+Quadratic Probing  O(n)     O(1)      O(n)     O(1)
+Separate Chaining  O(1)     O(1)      O(n)     O(1)
+                   ^
+                   Assuming we don't check for duplicates. Otherwise, O(n).
+
+
+*AN IMPORTANT NOTE*
+
+The hash function itself might not be O(1). If our hash function is O(k), the
+O(1) runtimes in our table technically become O(k). (For example, a hash
+function for strings might be O(k), where k is string length. In that case, our
+hash function operations would have linear average-case runtimes with respect to
+string length.)
+
+================================================================================
+
+Finally, we saw that one popular way to hash strings is to multiple each
+character's ASCII value by a power of some prime number and return the sum of
+those values. For example:
+
+   hash("cat") = ((int)'c' * 37^2) + ((int)'a' * 37^1) + ((int)'t' * 37^0)
+
+Note that "bat" and "cat" hash to very different positions using this function.
+
+We can compute this hash value without explicitly computing the various powers
+of 37. Note the following:
+
+     (c_0 * x^0) + (c_1 * x^1) + ... + (c_k * x^k)
+
+   = c_0 + x * (c_1 + x * (c_2 + ... x (c_k) ... ))
+
+(Do you see it?)
+
+This is Horner's Rule.
+
+================================================================================
+
+HORNER'S RULE
+
+Horner's Rule might be a bit easier to follow if we see some code. So, check it
+out:
+
+int hash(char *key)
+{
+	int i, hval = 0, len = strlen(key);
+	
+	for (i = 0; i < len; i++)
+		hval = (hval * 37 + (int)key[i]) % TABLE_SIZE;
+
+   return hval;
+}
+
+(Horner's Rule is mentioned again on July 25 in the notes on base conversion.
+See the file named "bconv.c" that I posted that day.)
+
+================================================================================
+
+When a hash table gets too full, we can expand it dynamically. We saw an example
+of this in class, when we were hashing strings. If we expand a hash table
+dynamically, the table size changes. Recall that the table size plays a vital
+role in our hash function and collision resolution mechanisms. Therefore, if we
+change our table size, we must take all the elements out of our hash table and
+re-hash them into the expanded table.
+
+================================================================================
+
+
+
