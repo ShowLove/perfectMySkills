@@ -14,8 +14,11 @@ struct node* promptForNodeInsertMiddle_LL(struct node *root);
 //Add a value to to initialize, front, middle, or end
 struct node* addNodes(struct node *root, int nodes);  
 struct node* addToFront(struct node *root, int value);
-struct node* addToMiddle(struct node *root, int value);
+struct node* addToMiddle(struct node *root, int value, int middle);
 struct node* addToEnd(struct node *root, int value);
+
+void freeNode(struct node *conductor);
+int findLength(struct node *root);
 void printNodes(struct node *conductor);
 
 int main()
@@ -46,7 +49,7 @@ int main()
     conductor = root;
     printNodes(conductor);
 
-		printf("Input a node to the middle of our list");
+		printf("Input a node to the middle of our list\n");
     root = promptForNodeInsertMiddle_LL(root);
 		if(root == NULL)
 			printf("We had an error in inserting middle\n");
@@ -55,7 +58,9 @@ int main()
 			printNodes(conductor);
 		}
 
-getchar();
+	printf("\n");
+	free(root);
+	getchar();
 }
 
 /*****************************************************
@@ -98,41 +103,6 @@ struct node* addNodes(struct node *root, int nodes) {
     //conductor = root;
 
     return root;
-
-}
-
-void printNodes(struct node *conductor) {
-    //must have conductor = root;  before executing this function
-
-    //print the list
-    if ( conductor != 0 )  /* Makes sure there is a place to start */
-    {
-        while(conductor->next != 0)
-        {
-            printf(" [%d]-> ",conductor->item);
-            conductor = conductor->next;
-        }
-    }
-}
-
-/**********************************************************
-* Prompts the user asking what number he wants to insert at 
-* end of Linked List
-**********************************************************/
-struct node* promptForNodeInsertEnd_LL(struct node *root){
-	//must create addToEnd function before using this function
-	int number = 0;
-	// User enters data for new node (or -1 to exit)
-	while(number!= -1) {
-		// Get the next number.
-		printf("enter data you want to insert at end of node: ");
-		scanf("%d", &number);
-		// Add to linked list if it's not -1.
-		if (number !=-1)
-		root = addToEnd(root, number);
-
-	}
-	return root;
 }
 
 /*******************************************************
@@ -164,6 +134,39 @@ struct node* addToEnd(struct node *root, int value) {
 /*******************************************************
 *Adds a new value and node to the front of the Linked List
 *******************************************************/
+struct node* addToMiddle(struct node *root, int value, int middle){
+	int i;
+	// Make helper pointer and store head of list into it
+	struct node *help_ptr = root;
+	// Create the new node and put data (from argument) into it
+	struct node * pNew = (struct node *)malloc(sizeof(struct node));
+	pNew->item = value;
+	pNew->next = NULL;
+	// Insertion into an empty list
+	// OR Insertion at the front of a non-empty list
+	// Remember we set root-item == 777
+	if (root == NULL || root->item > value) {
+		pNew->next = root;
+		root = pNew;
+		return root;
+	}
+	struct node *tmp;
+
+	for( i = 0; i < (middle-1); i++ )
+	{
+		help_ptr = help_ptr->next;	//this will eventually point to the node we want to replace
+																//which means this node will get scooched back 1 spot and point to the new node
+	}
+	tmp = help_ptr->next;
+	help_ptr->next = pNew;
+	pNew->next = tmp;
+ 
+	return root;
+}
+
+/*******************************************************
+*Adds a new value and node to the front of the Linked List
+*******************************************************/
 struct node* addToFront(struct node *root, int value) {
 	// Create the new node and put data (from argument) into it
 	struct node * pNew = (struct node *) malloc(sizeof(struct node));
@@ -184,6 +187,8 @@ struct node* addToFront(struct node *root, int value) {
 
 	return root;
 }
+
+//////////////////////PROMPT_USERS////////////////////////
 
 /**********************************************************
 * Prompts the user asking what number he wants to insert at 
@@ -209,36 +214,89 @@ struct node* promptForNodeInsertFront_LL(struct node *root){
 * middle of Linked List
 **********************************************************/
 struct node* promptForNodeInsertMiddle_LL(struct node *root){
-	int number = 0;
+	int number = 0, middle, Length;
 	while(number!= -1) {
 		// Get the next number.
-		printf("you are now inserting data: >");
+		printf("Enter the value you want ot insert into the middle of the Linked List: >");
 		scanf("%d", &number);
+
+		//We are assuming the the user is counting beg with 1
+		printf("\nWhere in the Linked List do you want to insert the node? >");
+		scanf("%d", &middle);
+		
+		Length = findLength(root);
+		if( Length < middle )
+		{
+			printf("Sorry your lenght is too long\n");
+			break;
+		}
 		// Add to linked list if it's not -1.
 		if (number !=-1)
-		root = addToMiddle(root, number);
+			root = addToMiddle(root, number, middle);
 	}
-
 	return root;
 }
 
-/*******************************************************
-*Adds a new value and node to the front of the Linked List
-*******************************************************/
-struct node* addToMiddle(struct node *root, int value){
-	// Make helper pointer and store head of list into it
-	struct node *help_ptr = root;
-	// Create the new node and put data (from argument) into it
-	struct node * pNew = (struct node *)malloc(sizeof(struct node));
-	pNew->item = value;
-	pNew->next = NULL;
-	// Insertion into an empty list
-	// OR Insertion at the front of a non-empty list
-	if (root == NULL || root->item > value) {
-		pNew->next = root;
-		root = pNew;
-		return root;
+/**********************************************************
+* Prompts the user asking what number he wants to insert at 
+* end of Linked List
+**********************************************************/
+struct node* promptForNodeInsertEnd_LL(struct node *root){
+	int number = 0;
+	// User enters data for new node (or -1 to exit)
+	while(number!= -1) {
+		// Get the next number.
+		printf("enter data you want to insert at end of Linked List: ");
+		scanf("%d", &number);
+		// Add to linked list if it's not -1.
+		if (number !=-1)
+		root = addToEnd(root, number);
 	}
-	return NULL;
+	return root;
 }
+
+/*****************************************************************
+* free nodes
+****************************************************************/
+void freeNode(struct node *conductor){
+	while(conductor->next != NULL)
+	{
+		free(conductor);
+	}
+
+}
+
+///////////////////////OTHER_FUNCTIONS////////////////////////////
+
+void printNodes(struct node *conductor) {
+    //must have conductor = root;  before executing this function
+
+    //print the list
+    if ( conductor != 0 )  /* Makes sure there is a place to start */
+    {
+        while(conductor->next != 0)
+        {
+            printf(" [%d]-> ",conductor->item);
+            conductor = conductor->next;
+        }
+    }
+}
+
+/*******************************
+* find the amount of nodes in LL
+*******************************/
+int findLength(struct node *root)
+{
+	int Length = 0;
+	struct node *tmp;
+	tmp = root;
+
+	while(tmp->next != NULL)
+	{
+		tmp = tmp->next;
+		Length++;
+	} 
+	return Length;
+}
+
 
