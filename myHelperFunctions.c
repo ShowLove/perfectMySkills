@@ -1,9 +1,13 @@
 //AWSOME FUNCTIONS
+void qsort(array, LEN, sizeof(int), mycmp);
 char* prompAndAlocStringDynamically(void);
 int findStrLen( char *str );
 void findNumAlefB();
+int next_prime(int n);
 
-/*************************************************************************
+/************************************************************************
+* Helper function to call qsort 
+***********************************************************************/
 //Quick_Sort
 int mycmp(const void *a, const void *b)
 {
@@ -12,15 +16,15 @@ int mycmp(const void *a, const void *b)
 qsort(array, LEN, sizeof(int), mycmp);
 
 /*************************************************************************
-function: char* prompAndAlocStringDynamically(void)
-
-Description:
-Prompts user for string and dynamically allocates space 
-one char at a time for it 
-returns a char pointer to the string
-
-caller responsibilities: free the space
-*/
+* function: char* prompAndAlocStringDynamically(void)
+*
+* Description:
+* Prompts user for string and dynamically allocates space 
+* one char at a time for it 
+* returns a char pointer to the string
+*
+* caller responsibilities: free the space
+******************************************************************/
 char* prompAndAlocStringDynamically(void) {
 	int size = 8; // initial str size to store input
 	char* str = malloc(size*sizeof(char));
@@ -52,7 +56,8 @@ char* prompAndAlocStringDynamically(void) {
 }
 
 /************************************************************************
-*/
+* finds length of the string in a most efficient way
+*********************************************************************/
 int findStrLen( char *str )
 {
 	char *s;
@@ -65,7 +70,7 @@ int findStrLen( char *str )
 
 /************************************************************************
 Finds ascii representation in int value of a-z, A-Z, \0 - DEL
-*/
+**********************************************************************/
 void findNumAlefB()
 {
 	int a = (int) 'a';
@@ -77,4 +82,34 @@ void findNumAlefB()
 	printf("lower case int rep of ascii a-z %d-%d \n", a, (a+26-1) );
 	printf("Upper case int rep of ascii A-Z %d-%d \n", A, (A+26-1) );
 	printf("int rep of chars range from %d-%d in ascii \n", null, tilde+1 ); //+1 for del
+}
+
+/*****************************************
+* determines whether an integer is prime
+****************************************/
+int is_prime(int n)
+{
+	int i;
+	
+	for (i = 3; i * i <= n; i++)
+		if (n % i == 0)
+			return 0;
+	
+	return 1;
+}
+
+/*********************************************************
+* a function to find the next prime number, beginning at n
+*********************************************************/
+int next_prime(int n)
+{
+	if (n % 2 == 0)
+		n++;
+	
+	while (!is_prime(n))
+		n += 2;
+	
+	return n;
+}
+
 	
