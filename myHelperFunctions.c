@@ -4,6 +4,7 @@ char* prompAndAlocStringDynamically(void);
 int findStrLen( char *str );
 void findNumAlefB();
 int next_prime(int n);
+int sz_array_min(int *array, int n); find min of array in n time
 
 /************************************************************************
 * Helper function to call qsort 
@@ -112,4 +113,26 @@ int next_prime(int n)
 	return n;
 }
 
+/********************************************************
+* These functions return the min val of an array i n time
+********************************************************/
+// return the minimum of two integers
+int min(int a, int b)
+{
+	// conditional operator is awesome
+	return (a < b) ? a : b;
+}
+
+// This is how I would implement the recursive solution. 
+int sz_array_min(int *array, int n)
+{
+	// If there's just one element in our array, that's the minimum element in
+	// the array.
+	if (n == 1)
+		return array[0];
+
+	// Take the minimum of the last element in the array, or the minimum element
+	// among the first (n - 1) elements of the array.
+	return min(array[n - 1], sz_array_min(array, n - 1));
+}
 	
