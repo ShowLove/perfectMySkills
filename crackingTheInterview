@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/****************************************************
+*
+****************************************************/
+void swapInPlace();
+//Helper Functions
+char *prompAndAlocStringDynamically(void);
+
+int main()
+{
+
+}
+
+/****************************************************
+*
+****************************************************/
+void swapInPlace()
+{
+
+}
+
+char* prompAndAlocStringDynamically(void)
+{
+	int size = 8;
+	char* str = malloc(size*sizeof(char));
+
+}
