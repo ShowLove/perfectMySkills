@@ -24,14 +24,6 @@ public class cti_main {
 		
 		System.out.println("Before array:");
 		object.printDoubleArray(MxN, 4);
-		
-		MxN_Rotate90 rotate = new MxN_Rotate90();
-		
-		rotate.rotate(MxN, 4);
-		
-		System.out.println("After array:");
-		object.printDoubleArray(MxN, 4);	
-		
 	}
 	
 	/*******************************************************************************
