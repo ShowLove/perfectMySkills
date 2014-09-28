@@ -88,6 +88,145 @@ node *insertNodeMid( int nodeNum, int num, node *root )
 	return root;
 }
 
+/****************************************************
+* Delets node that has specific value
+* Note that it deletes the first instance of this value
+****************************************************/
+node *deleteNodeValue( node *root )
+{
+	int value;
+	int nodeNum;
+
+	//delete node with given value
+	printf("What value are you looking for, so we can delete the node that has it? value: ");
+	scanf("%d", &value);
+
+	if( root->next == NULL && root->num == value)
+	{
+		printf("You have deleted your only node. You must now initialize a new Linked List\n\n");
+		free( root );
+		return NULL;
+	}
+
+	node *tmp = root;
+	node *tmp2 = NULL;
+
+	while( tmp->next != NULL )
+	{
+		if(tmp->num == value)			//We have found the node we want to delete
+		{
+			if(tmp2 == NULL) 				//We are trying to delete the first value in the list
+			{
+				tmp2 = tmp->next;
+				free( tmp );
+				return tmp2;					//Caller must remember to update root
+			}	
+			else										//We are deleting a middle node
+			{
+				tmp2->next = tmp->next;
+				free( tmp );
+				return root;
+			}
+		}
+		tmp2 = tmp; 							//keep track of node before the one you want to delete
+		tmp = tmp->next;
+	}
+
+	//check the case where value is in last node	
+	if( tmp->num == value)
+	{
+		tmp2->next = NULL;
+		free( tmp );
+	}
+
+	return root;
+}
+
+/******************************************************
+* Delete node at a specific possition
+*******************************************************/
+node *deleteNodePossition( node *root )
+{
+	int value;
+	int nodeNum;
+
+	printf("What node do you want to delete? nodeNum: ");
+	scanf("%d", &nodeNum);
+
+	node *tmp = root;
+	node *tmp2 = NULL;
+
+	//We are assuming caller takes 0 as base number
+	for(int i = 0; i < nodeNum; i++)
+	{
+		tmp2 = tmp;
+		tmp = tmp->next;
+		if( tmp == NULL )
+		{
+			printf("Error: You tried to delete a node outside of the known bounds\n");
+			return root;
+		}
+	}
+
+	//tmp is now at the node we want to delete 
+
+	if( nodeNum == 0 ) 							//We want to delete the first node
+	{
+		if( root->next == NULL )
+		{
+			printf("Your are deleting your only node. Remember to initialize a new Linked List\n");
+			free( root );
+			return NULL;
+		}
+		else									//We are deleting first node but it is not the only node
+		{
+			tmp = tmp->next;
+			free( root );
+			return tmp;							//Caller must remember to update root
+		}
+	}
+	else if( tmp->next == NULL )				//We want to delete the last node
+	{
+		tmp2->next = NULL;
+		free( tmp );
+		return root;
+	}
+	else												//We are deleting one of the middle nodes
+	{
+		printf("Deleting node in middle prev(%d) post(%d)", tmp2->num, tmp->num);
+		tmp2->next = tmp->next;
+		free( tmp );
+		return root;
+	}	
+}
+
+/********************************************************
+* Delete either node with value of at a certain possition
+********************************************************/
+node *deleteNode( node *root )
+{
+	int choice;
+
+	printf("\n Do you want to delete a node at desired possition or a node that has a particular value?\n");
+	printf(" 0 = delete node with given value, 1 = delete node at given position  choice = ");
+	scanf("%d", &choice );
+
+	if( choice == 0 )						//We are deleting a node with a certain value
+	{
+		return deleteNodeValue( root );
+	}	
+	else if( choice == 1 )					//We are deleting a node specific possition
+	{
+		return deleteNodePossition( root );
+	}
+	else
+	{
+		printf("Invalid Choice\n");
+	}
+
+	return root;
+}
+
 /*******************************************************
 *	Prints the list: Currently prints the num field of the list
 *******************************************************/
@@ -153,8 +292,8 @@ node *choose( node *root)
 	srand(time(NULL));
 	printf("What do you want to do?\n");
 	printf("choice:\n \t\t 0 = initialize,\n \t\t 1 = insert single node at end of LL\n \t\t 2 = insert multiple random nodes at end of LL\n");
-	printf("\t\t 3 = print\n \t\t 4 = insert node at begginning of list\n \t\t 5 = Insert node at desired position in list\n");
-	printf("Enter choice here: "); scanf("%d", &choice);
+	printf("\t\t 3 = print\n \t\t 4 = insert node at begginning of list\n \t\t 5 = Insert node at desired position in list\n \t\t 6 = Delete Node");
+	printf("\nEnter choice here: "); scanf("%d", &choice);
 	printf("\n");
 
 
@@ -208,6 +347,16 @@ node *choose( node *root)
 			printf("Successfully inserted a new node after node %d\n\n", insertPos);		
 			break;
 
+		case 6:
+			//Delete node
+			root = deleteNode( root );
+			if( root == NULL )
+			{
+				printf("You destroyed your list dont forget to initialize a new one!\n");
+			}
+			return root;
+			break;
+
 		default:
 			printf("Invalid Entry\n\n");
 	}
@@ -226,7 +375,7 @@ int main()
 	{
 		root = choose(root);
 
-		printf("Enter any number to continue or -1 to quit --> ");
+		printf("\nEnd? \t enter -1 to quit --> ");
 		scanf("%d", &choice);
 	}
 
