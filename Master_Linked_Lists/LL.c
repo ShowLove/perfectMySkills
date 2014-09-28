@@ -44,6 +44,50 @@ node *insertNodeEnd( int num, node *root )
 	return tmp->next;
 }
 
+/*****************************************
+* Insert node at beginning
+*****************************************/
+node *insertNodeBeg( int num, node *root )
+{
+	srand(time(NULL));
+	node *newNode = malloc( sizeof(struct node) );
+
+	newNode->num = num;
+	newNode->next = root;
+
+	return newNode;
+}
+
+/*****************************************
+* Inserts new node directly after nodeNum
+*****************************************/
+node *insertNodeMid( int nodeNum, int num, node *root )
+{
+	if(root == NULL)
+	{
+		printf("Error: You can't insert in a null list!");
+		return NULL;
+	}
+	node *tmp = root;
+
+	//!(-1) because we are assuming caller base is 0
+	for(int i = 0; i < nodeNum; i++)
+	{
+		if( tmp->next == NULL )
+		{
+			printf("Error: You attempted to insert a node out of the known range of nodes\n");
+			return NULL;
+		}		
+		tmp = tmp->next;
+	}
+
+	node *newNode = initNode( num );
+	newNode->next = tmp->next;
+	tmp->next = newNode;
+
+	return root;
+}
+
 /*******************************************************
 *	Prints the list: Currently prints the num field of the list
 *******************************************************/
@@ -104,12 +148,14 @@ node *choose( node *root)
 {
 	int choice;
 	int insertNum;
+	int insertPos;
 	int multNodes;
 	srand(time(NULL));
 	printf("What do you want to do?\n");
 	printf("choice:\n \t\t 0 = initialize,\n \t\t 1 = insert single node at end of LL\n \t\t 2 = insert multiple random nodes at end of LL\n");
-	printf("\t\t 3 = print\n");
+	printf("\t\t 3 = print\n \t\t 4 = insert node at begginning of list\n \t\t 5 = Insert node at desired position in list\n");
 	printf("Enter choice here: "); scanf("%d", &choice);
+	printf("\n");
 
 
 
@@ -143,6 +189,23 @@ node *choose( node *root)
 			//Print the nodes
 			printList( root );
 			printf("\n");
+			break;
+		case 4:
+			//Insert at beginning
+			printf("What number do you want to insert? insert: ");
+			scanf("%d", &insertNum);	
+			return insertNodeBeg(insertNum, root);
+			printf("Successfully inserted node at the beginning\n\n");
+			break;
+
+		case 5:
+			//Insert at desired node
+			printf("What number do you want to insert? insert: ");
+			scanf("%d", &insertNum);	
+			printf("After what possition do you want to insert? insertPos: ");
+			scanf("%d", &insertPos);	
+			insertNodeMid(insertPos, insertNum, root );
+			printf("Successfully inserted a new node after node %d\n\n", insertPos);		
 			break;
 
 		default:
