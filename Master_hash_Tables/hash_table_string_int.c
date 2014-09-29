@@ -6,6 +6,8 @@ typedef struct hash_table
 {
 	// hash table -- an array of strings
 	char **table;
+
+	int *numTable;
 	
 	// number of elements currently in the table
 	int size;
@@ -26,6 +28,9 @@ hash_table *create_table(int size)
 	h->table = malloc(sizeof(char *) * size);
 	for (i = 0; i < size; i++)
 		h->table[i] = NULL;
+
+	//Create Table for ints
+	h->numTable = malloc(sizeof(int) * size);
 	
 	h->capacity = size;
 	h->size     = 0;
@@ -90,7 +95,8 @@ void print_table(hash_table *h)
 	
 	for (i = 0; i < h->capacity; i++)
 	{
-		printf("%02d: %s\n", i, (h->table[i] == NULL) ? "(null)" : h->table[i]);
+		printf("%02d: %s ", i, (h->table[i] == NULL) ? "(null)" : h->table[i]);
+		printf(": num(%d)\n", (h->table[i] == NULL) ? 0 : h->numTable[i] );
 	}
 	/*
 	01: hello
@@ -149,6 +155,7 @@ void expand_table(hash_table *h)
 		{
 			index = get_pos(new_table, h->table[i]);
 			new_table->table[index] = h->table[i];
+			new_table->numTable[index] = h->numTable[i];
 		
 			new_table->size++;
 		}
@@ -157,6 +164,7 @@ void expand_table(hash_table *h)
 	free(h->table);
 	
 	h->table    = new_table->table;
+	h->numTable = new_table->numTable;
 	h->size     = new_table->size;
 	h->capacity = new_table->capacity;
 	
@@ -173,10 +181,16 @@ void hash_put(hash_table *h, char *key)
 	
 	// disallow insertion of duplicates into the hash table
 	if (h->table[index] != NULL)
+	{
+		h->numTable[index]++;
 		return;
+	}
+		
 	
 	// create space for the new string
 	h->table[index] = malloc(sizeof(char) * (strlen(key) + 1));
+	//Keep track of how many times we have tried to insert the key
+	h->numTable[index] = 1;
 	
 	// copy string into hash table
 	strcpy(h->table[index], key);
@@ -206,6 +220,7 @@ int main(void)
 	hash_put(h, "Analysis");
 	hash_put(h, "of");
 	hash_put(h, "Algorithms");
+	hash_put(h, "Data");
 	hash_put(h, "Data");
 	hash_put(h, "Structures");
 	
