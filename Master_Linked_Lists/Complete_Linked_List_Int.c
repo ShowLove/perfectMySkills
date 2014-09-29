@@ -283,6 +283,22 @@ node *insertMultipleNodes( node *root, int numNodes )
 	return root;
 }
 
+void freeNodes( node *root )
+{
+
+	node *tmp = root;
+
+	while( root->next != NULL )
+	{
+		tmp = tmp->next;
+		free(root);
+		root = tmp;
+	}
+
+	free(root);
+
+}
+
 node *choose( node *root)
 {
 	int choice;
@@ -379,5 +395,5 @@ int main()
 		scanf("%d", &choice);
 	}
 
-	free( root );
+	freeNodes(root);
 }
