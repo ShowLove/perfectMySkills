@@ -90,7 +90,7 @@ void print_table(hash_table *h)
 	for (i = 0; i < h->capacity; i++)
 	{
 		printf("%02d: ", i);
-		(h->table[i] == NULL) ? printf("(null)") : printf("%d", *h->table[i] );
+		(h->table[i] == NULL) ? printf("(null)\n") : printf("key(%d) \n", *h->table[i] );
 	}
 	/*
 	01: hello
@@ -206,8 +206,8 @@ int main(void)
 	hash_put(h, 2);
 	hash_put(h, 3);
 	hash_put(h, 4);
-	hash_put(h, 5);
 	hash_put(h, 6);
+	hash_put(h, 75);
 	
 	printf("Hash table at end of main():\n");
 	print_table(h);
