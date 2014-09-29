@@ -5,10 +5,7 @@
 typedef struct hash_table
 {
 	// hash table -- an array of strings
-	char **table;
-
-	// number of time each key was put
-	int *numTable;
+	int **table;
 	
 	// number of elements currently in the table
 	int size;
@@ -26,12 +23,9 @@ hash_table *create_table(int size)
 	
 	//Create Table for strings
 	hash_table *h = malloc(sizeof(hash_table));	
-	h->table = malloc(sizeof(char *) * size);
+	h->table = malloc(sizeof(int *) * size);
 	for (i = 0; i < size; i++)
 		h->table[i] = NULL;
-
-	//Create Table for ints
-	h->numTable = malloc(sizeof(int) * size);
 	
 	h->capacity = size;
 	h->size     = 0;
@@ -42,12 +36,11 @@ hash_table *create_table(int size)
 // hash function that uses Horner's Rule to compute:
 // (int)str[0] * 37^(k-1) + (int)str[1] * 37^(k-2) + ... + (int)str[k-1] * 37^0,
 // where k = strlen(str)
-int hash(char *key, int table_size)
+int hash(int key, int table_size)
 {
-	int i, hval = 0, len = strlen(key);
+	int i, hval = 0;
 	
-	for (i = 0; i < len; i++)
-		hval = (hval * 37 + key[i]) % table_size;
+	hval = (hval * 37 + key) % table_size;
 	
 	// For example: "cat"
 	//    hval = 'c' * 37^2 + 'a' * 37 + 't'
@@ -56,7 +49,7 @@ int hash(char *key, int table_size)
 }
 
 // quadratic probing
-int quadratic_get_pos(hash_table *h, char *key)
+int quadratic_get_pos(hash_table *h, char key)
 {
 	int i = 1, index, hval = hash(key, h->capacity);
 
@@ -66,10 +59,10 @@ int quadratic_get_pos(hash_table *h, char *key)
 	{
 		// assume keys in the hash table are unique, so it's okay to return this
 		// position if get_pos() is called by the hash_put() function
-		if (strcmp(h->table[index], key) == 0)
+		if ( *h->table[index] == key )
 			return index;
 		
-		printf(" *%s* collides with *%s*\n", key, h->table[index]);
+		printf(" *%d* collides with *%d*\n", key, *h->table[index]);
 		
 		index = (hval + i * i);
 		if (index < 0)
@@ -83,7 +76,7 @@ int quadratic_get_pos(hash_table *h, char *key)
 
 // get index of element to be inserted / retrieved using the appropriate probing
 // algorithm
-int get_pos(hash_table *h, char *key)
+int get_pos(hash_table *h, char key)
 {
 	return quadratic_get_pos(h, key);
 }
@@ -96,8 +89,8 @@ void print_table(hash_table *h)
 	
 	for (i = 0; i < h->capacity; i++)
 	{
-		printf("%02d: %s ", i, (h->table[i] == NULL) ? "(null)" : h->table[i]);
-		printf(": num(%d)\n", (h->table[i] == NULL) ? 0 : h->numTable[i] );
+		printf("%02d: ", i);
+		(h->table[i] == NULL) ? printf("(null)") : printf("%d", *h->table[i] );
 	}
 	/*
 	01: hello
@@ -154,9 +147,8 @@ void expand_table(hash_table *h)
 	{
 		if (h->table[i] != NULL)
 		{
-			index = get_pos(new_table, h->table[i]);
+			index = get_pos(new_table, *h->table[i]);
 			new_table->table[index] = h->table[i];
-			new_table->numTable[index] = h->numTable[i];
 		
 			new_table->size++;
 		}
@@ -165,7 +157,6 @@ void expand_table(hash_table *h)
 	free(h->table);
 	
 	h->table    = new_table->table;
-	h->numTable = new_table->numTable;
 	h->size     = new_table->size;
 	h->capacity = new_table->capacity;
 	
@@ -176,25 +167,19 @@ void expand_table(hash_table *h)
 }
 
 // insert key into hash table
-void hash_put(hash_table *h, char *key)
+void hash_put(hash_table *h, int key)
 {
 	int index = get_pos(h, key);
 	
 	// disallow insertion of duplicates into the hash table
 	if (h->table[index] != NULL)
-	{
-		h->numTable[index]++;
 		return;
-	}
-		
 	
 	// create space for the new string
-	h->table[index] = malloc(sizeof(char) * (strlen(key) + 1));
-	//Keep track of how many times we have tried to insert the key
-	h->numTable[index] = 1;
+	h->table[index] = malloc(sizeof(int));
 	
 	// copy string into hash table
-	strcpy(h->table[index], key);
+	*h->table[index] = key;
 	
 	// record keeping :)
 	h->size++;
@@ -205,7 +190,7 @@ void hash_put(hash_table *h, char *key)
 }
 
 // returns pointer to key if it is in the hash table, NULL otherwise
-char *hash_get(hash_table *h, char *key)
+int *hash_get(hash_table *h, int key)
 {
 	return h->table[get_pos(h, key)];
 }
@@ -216,21 +201,20 @@ int main(void)
 	
 	hash_table *h = create_table(11);
 	
-	hash_put(h, "Design");
-	hash_put(h, "and");
-	hash_put(h, "Analysis");
-	hash_put(h, "of");
-	hash_put(h, "Algorithms");
-	hash_put(h, "Data");
-	hash_put(h, "Data");
-	hash_put(h, "Structures");
+	hash_put(h, 0);
+	hash_put(h, 1);
+	hash_put(h, 2);
+	hash_put(h, 3);
+	hash_put(h, 4);
+	hash_put(h, 5);
+	hash_put(h, 6);
 	
 	printf("Hash table at end of main():\n");
 	print_table(h);
 	
-	printf("\"Data\": %s\n", hash_get(h, "Data") == NULL ? "NO" : "YES");
-	printf("\"data\": %s\n", hash_get(h, "data") == NULL ? "NO" : "YES");
-	printf("\"and\": %s\n", hash_get(h, "and") == NULL ? "NO" : "YES");
+	printf("\"Data\": %s\n", hash_get(h, 0) == NULL ? "NO" : "YES");
+	printf("\"data\": %s\n", hash_get(h, 9) == NULL ? "NO" : "YES");
+	printf("\"and\": %s\n", hash_get(h, 8) == NULL ? "NO" : "YES");
 	
 	return 0;
 }
