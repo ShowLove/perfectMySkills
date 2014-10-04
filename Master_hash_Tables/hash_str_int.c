@@ -176,14 +176,14 @@ void expand_table(hash_table *h)
 }
 
 // insert key into hash table
-void hash_put(hash_table *h, char *key)
+void hash_put(hash_table *h, char *key, int value)
 {
 	int index = get_pos(h, key);
 	
 	// disallow insertion of duplicates into the hash table
 	if (h->table[index] != NULL)
 	{
-		h->numTable[index]++;
+		h->numTable[index] = value;
 		return;
 	}
 		
@@ -191,7 +191,7 @@ void hash_put(hash_table *h, char *key)
 	// create space for the new string
 	h->table[index] = malloc(sizeof(char) * (strlen(key) + 1));
 	//Keep track of how many times we have tried to insert the key
-	h->numTable[index] = 1;
+	h->numTable[index] = value;
 	
 	// copy string into hash table
 	strcpy(h->table[index], key);
@@ -205,9 +205,13 @@ void hash_put(hash_table *h, char *key)
 }
 
 // returns pointer to key if it is in the hash table, NULL otherwise
-char *hash_get(hash_table *h, char *key)
+int hash_get(hash_table *h, char *key)
 {
-	return h->table[get_pos(h, key)];
+	if( h->table[get_pos(h, key)] == NULL )
+		return -1;		//This tells us we have not initiated this key 
+									//make certain to return something that won't be used as a value
+
+	return h->numTable[get_pos(h, key)];
 }
 
 int main(void)
@@ -216,21 +220,23 @@ int main(void)
 	
 	hash_table *h = create_table(11);
 	
-	hash_put(h, "Design");
-	hash_put(h, "and");
-	hash_put(h, "Analysis");
-	hash_put(h, "of");
-	hash_put(h, "Algorithms");
-	hash_put(h, "Data");
-	hash_put(h, "Data");
-	hash_put(h, "Structures");
+	hash_put(h, "Design", 1);
+	hash_put(h, "and", 2);
+	hash_put(h, "Analysis", 3);
+	hash_put(h, "of", 4);
+	hash_put(h, "Algorithms", 5);
+	hash_put(h, "Data", 6);
+	hash_put(h, "Data", 7);
+	hash_put(h, "Structures", 8);
 	
 	printf("Hash table at end of main():\n");
 	print_table(h);
 	
-	printf("\"Data\": %s\n", hash_get(h, "Data") == NULL ? "NO" : "YES");
-	printf("\"data\": %s\n", hash_get(h, "data") == NULL ? "NO" : "YES");
-	printf("\"and\": %s\n", hash_get(h, "and") == NULL ? "NO" : "YES");
+	printf("\"Data\": %s\n", hash_get(h, "Data") == -1 ? "NO" : "YES");
+	printf("\"data\": %s\n", hash_get(h, "data") == -1 ? "NO" : "YES");
+	printf("\"and\": %s\n", hash_get(h, "and") == -1 ? "NO" : "YES");
+
+	printf("\n use hash_get(Data)=(%d)\n", hash_get(h,"Data"));
 	
 	return 0;
 }
