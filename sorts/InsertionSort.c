@@ -1,43 +1,73 @@
-//Here's a few different implementations for Insertion sort
-//SORTTYPES_H_INCLUDED
-
-
-#include "SortTypes.h"
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-
-int main(void)
+int *intArray(int size)
 {
-    int i, n = 0, *array = NULL;
-    clock_t start, stop;
 
-    //seed random generator
-    srand(time(NULL));
+	srand(time(NULL));
 
-    printf("How big is the array?\n");
-    scanf("%d", &n);
+	int *array = malloc(sizeof(int)*size);
 
-    n = (n > DEFAULT_ARRAY_LEN) ? n: DEFAULT_ARRAY_LEN;
+	for(int i =0; i < size; i++)
+		array[i] = rand()%100;
 
-    array = malloc(sizeof(int) * n);
-
-    printRand(array, n);
-
-    start = clock();
-    chooseSort(array, n);
-    stop = clock();
-
-    printf("%lf seconds, %lf milliseconds\n", (double)stop-start / CLOCKS_PER_SEC, (double)stop-start/1000 / CLOCKS_PER_SEC);
-
-    for (i = 0; i < n; i++)
-    {
-        printf("%d ", array[i]);
-    }
-
-    printf("\n");
-
-    return 0;
+	return array;
 }
 
+
+
+int *insertionSort(int *array,int  size)
+{
+	int tmp;
+	int k = 0, j = 0, i = 0;
+	
+	for(i = 0; i < size; i++)
+	{
+		
+		for(j = 0; j < i; j++)
+		{
+			if( array[i] < array[j])
+			{
+				tmp = array[j];
+				array[j] = array[i];
+
+				for( k = i; k > j+1; k--)
+					array[k] = array[k-1];
+
+				array[k] = tmp;
+			}
+		}
+
+	}
+
+	return array;
+}
+
+void printArray(int *array, int size)
+{
+
+	printf("\nYour array -->");
+
+	for(int i = 0; i < size; i++)
+		printf(" %d ", array[i] );
+
+	printf("\n");
+
+}
+
+int main()
+{
+	int size;
+	printf("How big do you want your random array? size = ");
+	scanf("%d", &size);
+
+	int *array = intArray(size);
+
+	printArray(array, size);
+	
+	array = insertionSort(array, size);
+
+	printArray(array, size);
+
+}		
